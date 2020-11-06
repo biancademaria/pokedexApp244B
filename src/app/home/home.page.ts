@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component} from '@angular/core';
 import { PokemonService } from '../services/pokemon.service';
 
 @Component({
@@ -6,44 +6,59 @@ import { PokemonService } from '../services/pokemon.service';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
-export class HomePage implements OnInit {
+export class HomePage {
 
-  public listaPokemons: any = [];
+  public next: string;
+  public previous: string;
+
+  public totalPaginas = 0;
   public pagina = 1;
-  public totalPaginas = 1;
-  offset = 0;
-  pokemon = [];
+
+  public listaPokemonApi = [];
+  public listaPokemonExibir = [];
 
   constructor(
-    private pokemonService: PokemonService
-  ) {}
-
-  ngOnInit(){
-    this.carregarPokemons();
-   // this.paginaPokemons(1);
+    private pokeApi: PokemonService
+  ) {
+    this.buscarPokemons();
   }
 
-  carregarPokemons(carregarMais = false) {
-    this.pokemonService.buscarPokemons(this.offset).subscribe(res =>{
-      this.listaPokemons = res['name'];
-      this.totalPaginas = res[carregarMais];
-      console.log('Resultado: ', res);
-      this.pokemon = res;
-    })
+  public async buscarPokemons() {
+    await this.pokeApi.buscarPokemons().subscribe(dados => {
+      this.listaPokemonApi = []; //vai zerar a lista
+      this.totalPaginas = dados['count'] / 10; //vai calcular o total das páginas
 
+      this.previous = dados['previous']; //faz com que "anterior" traga os resultados de previous
+      this.next = dados['next']; //faz com que "próximo" traga os resultados de next
+
+      let listaApi = dados['results']; //exibe os resultados 
+
+      for (let item of listaApi) {
+        this.pokeApi.buscarPokemonNumero(item.url).subscribe(dadosPokemon => {
+          this.listaPokemonApi.push(dadosPokemon);
+          this.ordenarLista();
+        });
+      }
+    });
   }
 
-  // public paginaPokemons(pagina:number){
-   // if (pagina <= 0) {
-   //   pagina = 1;
-   // }
-   // this.pagina = pagina;
-   // this.pokemonService.buscarPokemons(pagina).subscribe(dados =>{
-   //   this.listaPokemons = dados['name'];
-   //   this.totalPaginas = dados['limit'];
-   //   console.log('LISTA: ', this.listaPokemons);
-   // })
-  //}
+  private ordenarLista() {
+    this.listaPokemonApi.sort((a, b) => {
+      if (a.id > b.id) {
+        return 1;
+      }
+      if (a.id < b.id) {
+        return -1;
+      }
+      return 0;
+    });
+    this.listaPokemonExibir = this.listaPokemonApi;
+  }
 
+  public paginacao(url, movimento) {
+    this.pagina = this.pagina + movimento;
+    this.pokeApi.url = url;
+    this.buscarPokemons();
+  }
 
 }

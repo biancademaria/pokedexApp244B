@@ -6,28 +6,53 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen color="dark">
-
-    <ion-item color="dark" *ngFor="let poke of pokemon" [routerLink]="'/exibir-pokemon/' + poke.pokeIndex">
-      <ion-chip slot="start">
-        <ion-label color="light">{{poke.pokeIndex}}</ion-label>
-      </ion-chip>
-      <ion-label>
-        <div>
-          <h2>{{poke.name}}</h2>
-          <ion-badge></ion-badge>
-          <ion-badge></ion-badge>
-        </div>
-      </ion-label>
-      <ion-thumbnail slot="end">
-        <img [src]="poke.imagem">
-      </ion-thumbnail>
-    </ion-item>
-
- <ion-footer>
-   <ion-toolbar color="danger" class="ion-text-center">
+<ion-content color="dark">
+<ion-item-sliding *ngFor="let pokemon of listaPokemonExibir">
+  <ion-item color="dark">
     
-   </ion-toolbar>
- </ion-footer>
+    <ion-chip [color]="pokemon.types[0].type.name | lowercase" slot="start">
+      <ion-label [color]="pokemon.types[0].type.name | lowercase">{{pokemon.id}}</ion-label>
+    </ion-chip>
 
+    <ion-label>
+      <div>
+        <h2>{{pokemon.name}}</h2>
+        <ion-badge [color]="tipo.type.name | lowercase" *ngFor="let tipo of pokemon.types">
+          {{tipo.type.name}}
+        </ion-badge>
+      </div>
+    </ion-label>
+
+    <ion-thumbnail slor="end">
+      <img [src]="pokemon.sprites.front_default">
+    </ion-thumbnail>
+  </ion-item>
+
+  <ion-item-options side="end">
+    <ion-item-option color="danger">
+      <ion-icon slot="icon-only" name="trash"></ion-icon>
+    </ion-item-option>
+  </ion-item-options>
+
+</ion-item-sliding>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar color="danger" class="ion-text-center">
+
+    <ion-buttons slot="start" *ngIf="pagina > 1">
+      <ion-button expand="block" color="dark" (click)="paginacao(previous, -1)">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    {{ pagina }} de {{ (totalPaginas).toFixed(0) }}
+
+    <ion-buttons slot="end" *ngIf="pagina < totalPaginas">
+      <ion-button expand="block" color="dark" (click)="paginacao(next, 1)">
+        <ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+  </ion-toolbar>
+</ion-footer>
